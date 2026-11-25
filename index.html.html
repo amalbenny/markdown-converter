@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Markdown Previewer &amp; Exporter</title>
+<style>
+:root{--bg:#f6f7f9;--pn:#fff;--fg:#1f2328;--mu:#656d76;--bd:#d0d7de;--ac:#2563eb;--cd:#f0f2f5;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1117;--pn:#161b22;--fg:#e6edf3;--mu:#8b949e;--bd:#30363d;--ac:#58a6ff;--cd:#21262d;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0d1117;--pn:#161b22;--fg:#e6edf3;--mu:#8b949e;--bd:#30363d;--ac:#58a6ff;--cd:#21262d;color-scheme:dark}
+html,body{height:100%;margin:0}
+body{display:flex;flex-direction:column;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;background:var(--pn);border-bottom:1px solid var(--bd)}
+header h1{font-size:16px;margin:0 auto 0 0}
+button{font:inherit;font-size:13px;padding:6px 12px;border:1px solid var(--bd);background:var(--pn);color:var(--fg);border-radius:6px;cursor:pointer}
+button:hover{border-color:var(--ac)}
+button.pri{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}
+label.sw{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mu);cursor:pointer}
+main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
+section{display:flex;flex-direction:column;min-height:0;background:var(--pn);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.bar{display:flex;gap:6px;align-items:center;padding:6px 8px;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+.bar .sp{margin-left:auto;color:var(--mu);font-size:12px}
+.tab.on{background:var(--ac);border-color:var(--ac);color:#fff}
+textarea{flex:1;resize:none;border:0;outline:0;padding:12px;background:transparent;color:var(--fg);font:13px/1.55 ui-monospace,Consolas,Menlo,monospace;tab-size:4}
+#pv,#raw{flex:1;overflow:auto;padding:14px 18px;margin:0}
+#raw{font:12.5px/1.55 ui-monospace,Consolas,Menlo,monospace;white-space:pre-wrap;word-break:break-word}
+#pv h1,#pv h2{border-bottom:1px solid var(--bd);padding-bottom:.25em}
+#pv pre{background:var(--cd);padding:10px;border-radius:6px;overflow:auto}
+#pv code{background:var(--cd);padding:1px 5px;border-radius:4px;font-family:ui-monospace,Consolas,monospace;font-size:.9em}
+#pv pre code{background:none;padding:0}
+#pv blockquote{border-left:4px solid var(--bd);margin:8px 0;padding:0 14px;color:var(--mu)}
+#pv table{border-collapse:collapse;display:block;overflow:auto}
+#pv th,#pv td{border:1px solid var(--bd);padding:5px 10px}
+#pv th{background:var(--cd)}
+#pv img{max-width:100%}
+#pv .alert{border-left:4px solid var(--ac);padding:4px 14px;margin:8px 0;background:var(--cd);border-radius:0 6px 6px 0}
+#pv .alert p{margin:4px 0}
+#pv details{border:1px solid var(--bd);border-radius:6px;padding:4px 10px;margin:8px 0}
+.spoiler{background:var(--fg);color:transparent;border-radius:3px;padding:0 3px;cursor:pointer}
+.spoiler.on{background:var(--cd);color:inherit}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1f2328;color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.show{opacity:1}
+[hidden]{display:none!important}
+@media (max-width:760px){main{grid-template-columns:1fr;grid-auto-rows:minmax(60vh,1fr);overflow:auto}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Markdown Previewer &amp; Exporter</h1>
+  <button class="pri" id="cRich">Copy Rich Text</button>
+  <button id="cGfm">Copy GFM</button>
+  <button id="cRed">Copy Reddit MD</button>
+  <button id="cCm">Copy CommonMark</button>
+  <button id="cTxt">Copy Plain Text</button>
+  <label class="sw"><input type="checkbox" id="strict" checked> Old Reddit Strict Mode (4-space code blocks)</label>
+  <button id="theme">Dark / Light</button>
+</header>
+<main>
+  <section>
+    <div class="bar"><button id="sample">Load Sample Kitchen-Sink Text</button><button id="clear">Clear</button><span class="sp" id="cnt"></span></div>
+    <textarea id="ed" spellcheck="false" placeholder="Type or paste Markdown here…"></textarea>
+  </section>
+  <section>
+    <div class="bar" id="tabs">
+      <button class="tab on" data-t="pv">Live Preview</button>
+      <button class="tab" data-t="gfm">GFM</button>
+      <button class="tab" data-t="reddit">Reddit MD</button>
+      <button class="tab" data-t="cm">CommonMark</button>
+      <button class="tab" data-t="txt">Plain Text</button>
+      <button class="tab" data-t="html">HTML</button>
+      <button class="tab" data-t="ast">AST</button>
+    </div>
+    <div id="pv"></div>
+    <pre id="raw" hidden></pre>
+  </section>
+</main>
+<div id="toast"></div>
+<script>
+"use strict";
+/* ---------- Block parser ---------- */
+const FENCE=/^( {0,3})(`{3,}|~{3,})\s*([^`\s]*)[^`]*$/;
+const LIST=/^( {0,3})([-*+]|\d{1,9}[.)])( +|$)/;
+const HR=/^ {0,3}([-*_])(?: *\1){2,} *$/;
+const HEAD=/^ {0,3}(#{1,6})(?:\s+(.*?))?(?:\s+#+)?\s*$/;
+const TDELIM=/^\s*\|?\s*:?-+:?\s*(?:\|\s*:?-+:?\s*)*\|?\s*$/;
+const BQ=/^ {0,3}>(?!!)/;
+const indentOf=l=>/^ */.exec(l)[0].length;
+function lstI(l){const m=LIST.exec(l);return !!m&&l.trim().length>m[2].length&&(!/\d/.test(m[2][0])||parseInt(m[2],10)===1)}
+const isS=l=>FENCE.test(l)||HEAD.test(l)||HR.test(l)||BQ.test(l)||/^\s*<details/i.test(l)||lstI(l);
+function splitRow(r){r=r.trim().replace(/^\|/,'').replace(/([^\\])\|$/,'$1');const cells=[];let b='';for(let i=0;i<r.length;i++){const c=r[i];if(c==='\\'&&r[i+1]==='|'){b+='|';i++}else if(c==='|'){cells.push(b.trim());b=''}else b+=c}cells.push(b.trim());return cells}
+
+function parseBlocks(L){
+  const out=[];let i=0,m;
+  while(i<L.length){
+    const l=L[i];
+    if(!l.trim()){i++;continue}
+    if(m=FENCE.exec(l)){
+      const ind=m[1].length,ch=m[2][0],len=m[2].length,body=[];i++;
+      const close=new RegExp('^ {0,3}'+ch+'{'+len+',}\\s*$'),strip=new RegExp('^ {0,'+ind+'}');
+      while(i<L.length&&!close.test(L[i])){body.push(L[i].replace(strip,''));i++}
+      i++;out.push({t:'code',lang:m[3],v:body.join('\n')});continue;
+    }
+    if(/^\s*<details/i.test(l)){
+      let depth=0;const buf=[];
+      for(;i<L.length;i++){const x=L[i];depth+=(x.match(/<details/gi)||[]).length-(x.match(/<\/details>/gi)||[]).length;buf.push(x);if(depth<=0){i++;break}}
+      let t=buf.join('\n');
+      const sm=/<summary[^>]*>([\s\S]*?)<\/summary>/i.exec(t);
+      t=t.replace(/^\s*<details[^>]*>/i,'').replace(/<summary[^>]*>[\s\S]*?<\/summary>/i,'').replace(/<\/details>\s*$/i,'');
+      out.push({t:'details',sum:parseInline((sm?sm[1]:'Details').trim()),c:parseBlocks(t.split('\n'))});continue;
+    }
+    if(HR.test(l)){out.push({t:'hr'});i++;continue}
+    if(m=HEAD.exec(l)){out.push({t:'h',n:m[1].length,c:parseInline((m[2]||'').trim())});i++;continue}
+    if(BQ.test(l)){
+      const q=[];
+      while(i<L.length&&BQ.test(L[i])){q.push(L[i].replace(/^ {0,3}> ?/,''));i++}
+      const a=/^\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*$/i.exec(q[0]);
+      out.push(a?{t:'alert',k:a[1].toLowerCase(),c:parseBlocks(q.slice(1))}:{t:'quote',c:parseBlocks(q)});continue;
+    }
+    if(l.includes('|')&&i+1<L.length&&TDELIM.test(L[i+1])&&splitRow(l).length===splitRow(L[i+1]).length){
+      const head=splitRow(l),n=head.length;
+      const al=splitRow(L[i+1]).map(c=>/^:-+:$/.test(c)?'center':/^:/.test(c)?'left':/:$/.test(c)?'right':null);
+      i+=2;const rows=[];
+      while(i<L.length&&L[i].trim()&&!isS(L[i])){const r=splitRow(L[i]);while(r.length<n)r.push('');rows.push(r.slice(0,n).map(c=>parseInline(c)));i++}
+      out.push({t:'table',al,head:head.map(c=>parseInline(c)),rows});continue;
+    }
+    if(/^( {4}|\t)/.test(l)){
+      const b=[];
+      while(i<L.length&&(!L[i].trim()||/^( {4}|\t)/.test(L[i]))){b.push(L[i].replace(/^( {4}|\t)/,''));i++}
+      while(b.length&&!b[b.length-1].trim())b.pop();
+      out.push({t:'code',lang:'',v:b.join('\n')});continue;
+    }
+    if(m=LIST.exec(l)){
+      const ordered=/\d/.test(m[2][0]),items=[];let loose=false;const start=ordered?parseInt(m[2],10):1;
+      while(i<L.length){
+        if(items.length){let j=i;while(j<L.length&&!L[j].trim())j++;if(j>i&&j<L.length&&LIST.test(L[j])&&!HR.test(L[j])){loose=true;i=j}}
+        const mm=LIST.exec(L[i]);
+        if(!mm||HR.test(L[i])||/\d/.test(mm[2][0])!==ordered)break;
+        const cw=mm[1].length+mm[2].length+1;
+        const body=[L[i].slice(mm[0].length>cw+3?cw:mm[0].length)];i++;
+        while(i<L.length){
+          const x=L[i];
+          if(!x.trim()){
+            let j=i;while(j<L.length&&!L[j].trim())j++;
+            if(j<L.length&&indentOf(L[j])>=cw){for(;i<j;i++)body.push('');loose=true;continue}
+            break;
+          }
+          if(indentOf(x)>=cw){body.push(x.slice(cw));i++;continue}
+          if(LIST.test(x)||isS(x))break;
+          body.push(x.trim());i++;
+        }
+        let task=null;
+        const tm=/^\[( |x|X)\]\s+/.exec(body[0]);
+        if(tm){task=tm[1]!==' ';body[0]=body[0].slice(tm[0].length)}
+        items.push({task,c:parseBlocks(body)});
+      }
+      out.push({t:'list',ordered,start,loose,items});continue;
+    }
+    const p=[l];i++;
+    while(i<L.length&&L[i].trim()&&!isS(L[i])){p.push(L[i]);i++}
+    out.push({t:'p',c:parseInline(p.map((x,k)=>k?x.replace(/^\s+/,''):x.replace(/^\s+/,'')).join('\n').trimEnd())});
+  }
+  return out;
+}
+const parse=src=>parseBlocks(src.replace(/\r\n?/g,'\n').split('\n').map(l=>l.replace(/^\t+/,t=>'    '.repeat(t.length))));
+
+/* ---------- Inline parser ---------- */
+const PUN=/[!-\/:-@\[-`{-~]/;
+function findRun(s,from,len){const re=/`+/g;re.lastIndex=from;let m;while(m=re.exec(s))if(m[0].length===len)return m.index;return -1}
+function skipCode(s,i){const r=/^`+/.exec(s.slice(i))[0],e=findRun(s,i+r.length,r.length);return e>=0?e+r.length-1:i+r.length-1}
+function mb(s,st){let d=0;for(let i=st;i<s.length;i++){const c=s[i];if(c==='\\'){i++;continue}if(c==='`'){i=skipCode(s,i);continue}if(c==='[')d++;else if(c===']'&&--d===0)return i}return -1}
+function findClose(s,from,mk,wb){
+  for(let i=from;i<s.length;i++){
+    const c=s[i];
+    if(c==='\\'){i++;continue}
+    if(c==='`'){i=skipCode(s,i);continue}
+    if(s.startsWith(mk,i)&&i>from&&!/\s/.test(s[i-1])){
+      const nx=s[i+mk.length];
+      if(mk.length===1&&nx===mk[0]){i++;continue}
+      if(mk.length===2&&nx===mk[0]){continue}
+      if(wb&&nx&&/\w/.test(nx))continue;
+      return i;
+    }
+  }
+  return -1;
+}
+function parseInline(s,ctx){
+  ctx=ctx||{};const out=[];let buf='';const n=s.length;let i=0;
+  const flush=()=>{if(buf){out.push({t:'text',v:buf});buf=''}};
+  const push=x=>{flush();out.push(x)};
+  while(i<n){
+    const c=s[i],rest=s.slice(i);let m;
+    if(c==='\\'){
+      if(s[i+1]==='\n'){push({t:'br'});i+=2;continue}
+      if(i+1<n&&PUN.test(s[i+1])){push({t:'text',v:s[i+1],esc:true});i+=2;continue}
+    }
+    if(c==='`'){
+      const run=/^`+/.exec(rest)[0],e=findRun(s,i+run.length,run.length);
+      if(e>=0){let code=s.slice(i+run.length,e).replace(/\n/g,' ');if(/^ .* $/.test(code)&&code.trim())code=code.slice(1,-1);push({t:'code',v:code});i=e+run.length;continue}
+      buf+=run;i+=run.length;continue;
+    }
+    if((c==='['&&!ctx.link)||(c==='!'&&s[i+1]==='[')){
+      const img=c==='!',st=i+(img?1:0),e=mb(s,st);
+      if(e>0&&s[e+1]==='('){
+        const d=/^\(\s*(<[^>]*>|[^\s()]*(?:\([^\s()]*\)[^\s()]*)*)(?:\s+"([^"]*)")?\s*\)/.exec(s.slice(e+1));
+        if(d){
+          const url=d[1].replace(/^<|>$/g,''),label=s.slice(st+1,e);
+          push(img?{t:'img',alt:label,url,title:d[2]}:{t:'link',url,title:d[2],c:parseInline(label,{link:1})});
+          i=e+1+d[0].length;continue;
+        }
+      }
+    }
+    if(c==='&'&&(m=/^&(#[xX][0-9a-fA-F]+|#\d+|[A-Za-z][A-Za-z0-9]{1,31});/.exec(rest))){
+      let ch=decEnt(m[0]);
+      if(ch!==m[0]){ch=ch.replace(/\u00a0/g,' ');push({t:'text',v:ch,esc:ch.length===1&&/[\\`*_\[\]<>~^|]/.test(ch)});i+=m[0].length;continue}
+    }
+    if(c==='>'&&s[i+1]==='!'){
+      const e=s.indexOf('!<',i+2);
+      if(e>i+2){push({t:'spoiler',c:parseInline(s.slice(i+2,e),ctx)});i=e+2;continue}
+    }
+    if(c==='^'){
+      if(s[i+1]==='('){
+        let d=0,j=i+1;
+        for(;j<n;j++){if(s[j]==='(')d++;else if(s[j]===')'&&--d===0)break}
+        if(j<n){push({t:'sup',c:parseInline(s.slice(i+2,j),ctx)});i=j+1;continue}
+      }else if(m=/^\^([^\s^]+)/.exec(rest)){push({t:'sup',c:parseInline(m[1],ctx)});i+=m[0].length;continue}
+    }
+    if(c==='<'){
+      if(m=/^<(https?:\/\/[^\s<>]+)>/.exec(rest)){push({t:'auto',kind:'url',url:m[1]});i+=m[0].length;continue}
+      if(m=/^<(\/?)([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/.exec(rest)){
+        const tg=m[2].toLowerCase();
+        if(!m[1]&&(tg==='sup'||tg==='sub')){
+          const e=s.toLowerCase().indexOf('</'+tg+'>',i+m[0].length);
+          if(e>0){push({t:tg,c:parseInline(s.slice(i+m[0].length,e),ctx)});i=e+tg.length+3;continue}
+        }
+        push({t:'html',tag:tg,close:!!m[1],raw:m[0]});i+=m[0].length;continue;
+      }
+    }
+    if(c==='~'&&s[i+1]==='~'&&!/\s/.test(s[i+2]||' ')){
+      const e=findClose(s,i+2,'~~');
+      if(e>0){push({t:'del',c:parseInline(s.slice(i+2,e),ctx)});i=e+2;continue}
+    }
+    if(c==='*'||c==='_'){
+      const r=new RegExp('^\\'+c+'+').exec(rest)[0],k=Math.min(r.length,3),prev=s[i-1];
+      if(!/\s/.test(s[i+k]||' ')&&!(c==='_'&&prev&&/\w/.test(prev))){
+        const mk=c.repeat(k),e=findClose(s,i+k,mk,c==='_');
+        if(e>0){
+          const inner=parseInline(s.slice(i+k,e),ctx);
+          push(k===3?{t:'em',c:[{t:'strong',c:inner}]}:{t:k===2?'strong':'em',c:inner});
+          i=e+k;continue;
+        }
+      }
+      buf+=r;i+=r.length;continue;
+    }
+    if(c==='h'&&!ctx.link&&(i===0||!/\w/.test(s[i-1]))&&(m=/^https?:\/\/[^\s<>\[\]]+/.exec(rest))){
+      let u=m[0].replace(/[.,;:!?'"*_~]+$/,'');
+      while(u.endsWith(')')&&(u.match(/\(/g)||[]).length<(u.match(/\)/g)||[]).length)u=u.slice(0,-1);
+      push({t:'auto',kind:'url',url:u});i+=u.length;continue;
+    }
+    if((c==='r'||c==='u'||c==='/')&&!ctx.link&&(i===0||!/[\w\/.:]/.test(s[i-1]))&&(m=/^\/?(r|u)\/([A-Za-z0-9_-]{2,21})(?!\w)/.exec(rest))){
+      push({t:'auto',kind:m[1],name:m[2],slash:rest[0]==='/'});i+=m[0].length;continue;
+    }
+    if(c==='\n'){
+      if(/ {2,}$/.test(buf)){buf=buf.replace(/ +$/,'');push({t:'br'})}else{buf=buf.replace(/ +$/,'')+'\n'}
+      i++;continue;
+    }
+    buf+=c;i++;
+  }
+  flush();return out;
+}
+
+/* ---------- HTML compiler ---------- */
+const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const safe=(u,img)=>(/^\s*(javascript|vbscript):/i.test(u)||(!img&&/^\s*data:/i.test(u)))?'#':u;
+const OKTAGS=new Set(['b','i','u','s','em','strong','kbd','mark','small','del','ins','br']);
+const ALERT={note:['Note','#0969da'],tip:['Tip','#1a7f37'],important:['Important','#8250df'],warning:['Warning','#9a6700'],caution:['Caution','#cf222e']};
+const S={code:'background:#f0f2f5;padding:1px 5px;border-radius:4px;font-family:Consolas,Menlo,monospace;font-size:90%;',sp:'background:#2b2f36;color:#fff;border-radius:3px;padding:0 4px;',pre:'background:#f6f8fa;border:1px solid #d0d7de;border-radius:6px;padding:10px;font-family:Consolas,Menlo,monospace;font-size:13px;white-space:pre-wrap;',tbl:'border-collapse:collapse;margin:8px 0;',th:'border:1px solid #bbb;padding:6px 10px;background:#f0f2f5;font-weight:bold;',td:'border:1px solid #bbb;padding:6px 10px;',bq:'border-left:4px solid #bbb;margin:8px 0;padding:2px 14px;color:#555;',hr:'border:0;border-top:1px solid #bbb;',al:'margin:8px 0;padding:4px 14px;background:#f6f8fa;'};
+const st=(o,k,x)=>{const s=(o.inline?S[k]||'':'')+(x||'');return s?` style="${s}"`:''};
+function riH(ns,o){
+  return ns.map(n=>{
+    const c=n.c?riH(n.c,o):'';
+    switch(n.t){
+      case 'text':return E(n.v);
+      case 'br':return '<br>';
+      case 'code':return `<code${st(o,'code')}>${E(n.v)}</code>`;
+      case 'strong':return `<strong>${c}</strong>`;
+      case 'em':return `<em>${c}</em>`;
+      case 'del':return `<del>${c}</del>`;
+      case 'sup':return `<sup>${c}</sup>`;
+      case 'sub':return `<sub>${c}</sub>`;
+      case 'spoiler':return `<span class="spoiler"${st(o,'sp')}>${c}</span>`;
+      case 'link':return `<a href="${E(safe(n.url))}"${n.title?` title="${E(n.title)}"`:''}>${c}</a>`;
+      case 'img':return `<img src="${E(safe(n.url,1))}" alt="${E(n.alt)}"${n.title?` title="${E(n.title)}"`:''}>`;
+      case 'html':return OKTAGS.has(n.tag)?(n.close?`</${n.tag}>`:`<${n.tag}>`):'';
+      case 'auto':{
+        const u=n.kind==='url'?n.url:`https://www.reddit.com/${n.kind}/${n.name}`;
+        const tx=n.kind==='url'?n.url:(n.slash?'/':'')+n.kind+'/'+n.name;
+        return `<a href="${E(u)}">${E(tx)}</a>`;
+      }
+    }
+    return '';
+  }).join('');
+}
+function rbH(bs,o,tight){
+  return bs.map(n=>{
+    switch(n.t){
+      case 'p':return tight?riH(n.c,o):`<p>${riH(n.c,o)}</p>`;
+      case 'h':return `<h${n.n}>${riH(n.c,o)}</h${n.n}>`;
+      case 'hr':return `<hr${st(o,'hr')}>`;
+      case 'code':return `<pre${st(o,'pre')}><code${n.lang?` class="language-${E(n.lang)}"`:''}>${E(n.v)}</code></pre>`;
+      case 'quote':return `<blockquote${st(o,'bq')}>${rbH(n.c,o)}</blockquote>`;
+      case 'alert':{
+        const k=ALERT[n.k];
+        return `<div class="alert"${st(o,'al','border-left:4px solid '+k[1]+';')}><p${st(o,'',`color:${k[1]};font-weight:bold;margin:0 0 4px;`)}>${k[0]}</p>${rbH(n.c,o)}</div>`;
+      }
+      case 'details':return `<details><summary>${riH(n.sum,o)}</summary>${rbH(n.c,o)}</details>`;
+      case 'table':{
+        const cell=(tg,c,i)=>`<${tg}${st(o,tg,n.al[i]?`text-align:${n.al[i]};`:'')}>${riH(c,o)}</${tg}>`;
+        return `<table${st(o,'tbl')}><thead><tr>${n.head.map((c,i)=>cell('th',c,i)).join('')}</tr></thead><tbody>${n.rows.map(r=>`<tr>${r.map((c,i)=>cell('td',c,i)).join('')}</tr>`).join('')}</tbody></table>`;
+      }
+      case 'list':{
+        const tg=n.ordered?'ol':'ul';
+        return `<${tg}${n.ordered&&n.start!==1?` start="${n.start}"`:''}>${n.items.map(it=>`<li${it.task!==null?' style="list-style:none"':''}>${it.task!==null?`<input type="checkbox" disabled${it.task?' checked':''}> `:''}${rbH(it.c,o,!n.loose)}</li>`).join('')}</${tg}>`;
+      }
+    }
+    return '';
+  }).join('\n');
+}
+
+/* ---------- Markdown compilers: gfm | reddit | cm ---------- */
+const codeMd=v=>{const r=(v.match(/`+/g)||[]).reduce((a,b)=>Math.max(a,b.length),0),f='`'.repeat(r?r+1:1);return f+(/^`|`$/.test(v)?' '+v+' ':v)+f};
+const urlMd=u=>/[\s()]/.test(u)?`<${u}>`:u;
+const bq=s=>s.split('\n').map(l=>l?'> '+l:'>').join('\n');
+function mdI(ns,M,O){
+  return ns.map(n=>{
+    const c=n.c?mdI(n.c,M,O):'';
+    switch(n.t){
+      case 'text':return n.esc?'\\'+n.v:n.v;
+      case 'br':return '  \n';
+      case 'code':return codeMd(n.v);
+      case 'strong':return `**${c}**`;
+      case 'em':return `*${c}*`;
+      case 'del':return M==='cm'?c:`~~${c}~~`;
+      case 'sup':return M==='gfm'?`<sup>${c}</sup>`:M==='reddit'?`^(${c})`:c;
+      case 'sub':return M==='gfm'?`<sub>${c}</sub>`:c;
+      case 'spoiler':return M==='gfm'?`<details><summary>Spoiler</summary>${c}</details>`:M==='reddit'?`>!${c}!<`:`**Spoiler:** ${c}`;
+      case 'link':return `[${c}](${urlMd(n.url)}${n.title?` "${n.title}"`:''})`;
+      case 'img':return `![${n.alt}](${urlMd(n.url)}${n.title?` "${n.title}"`:''})`;
+      case 'html':return M==='reddit'?'':n.raw;
+      case 'auto':{
+        if(n.kind==='url')return M==='cm'?`<${n.url}>`:n.url;
+        const t=(n.slash?'/':'')+n.kind+'/'+n.name;
+        return M==='reddit'?t:`[${t}](https://www.reddit.com/${n.kind}/${n.name})`;
+      }
+    }
+    return '';
+  }).join('');
+}
+function mdB(bs,M,O,tight){return bs.map(n=>mdN(n,M,O)).join(tight?'\n':'\n\n')}
+function mdN(n,M,O){
+  switch(n.t){
+    case 'p':
+      if(M==='gfm'&&n.c.length===1&&n.c[0].t==='spoiler')return `<details><summary>Spoiler</summary>\n\n${mdI(n.c[0].c,M,O)}\n\n</details>`;
+      return mdI(n.c,M,O);
+    case 'h':return '#'.repeat(n.n)+' '+mdI(n.c,M,O);
+    case 'hr':return '---';
+    case 'code':
+      if(M==='reddit'&&O.strict)return n.v.split('\n').map(x=>x?'    '+x:'').join('\n');
+      {const r=(n.v.match(/`+/g)||[]).reduce((a,b)=>Math.max(a,b.length),0),f='`'.repeat(Math.max(3,r+1));return f+n.lang+'\n'+n.v+'\n'+f}
+    case 'quote':return bq(mdB(n.c,M,O));
+    case 'alert':{
+      const k=ALERT[n.k][0],body=mdB(n.c,M,O);
+      return M==='gfm'?bq(`[!${k.toUpperCase()}]`+(body?'\n'+body:'')):bq(`**${k}**`+(body?'\n\n'+body:''));
+    }
+    case 'details':
+      if(M==='gfm')return `<details>\n<summary>${mdI(n.sum,M,O)}</summary>\n\n${mdB(n.c,M,O)}\n\n</details>`;
+      if(M==='reddit')return n.c.map(b=>(b.t==='p'||b.t==='h')?`>!${mdN(b,M,O).replace(/^#+ /,'').replace(/\s*\n+\s*/g,' ')}!<`:mdN(b,M,O)).join('\n\n');
+      return bq(`**${mdI(n.sum,M,O)}**\n\n${mdB(n.c,M,O)}`);
+    case 'table':{
+      const cell=c=>mdI(c,M,O).replace(/\|/g,'\\|');
+      if(M==='cm'){
+        const rows=[n.head,...n.rows].map(r=>r.map(c=>mdI(c,'cm',O).replace(/\n/g,' ')));
+        const w=n.head.map((_,i)=>Math.max(3,...rows.map(r=>r[i].length)));
+        const ln=r=>r.map((c,i)=>c.padEnd(w[i])).join(' | ').trimEnd();
+        return '```\n'+[ln(rows[0]),w.map(x=>'-'.repeat(x)).join('-|-'),...rows.slice(1).map(ln)].join('\n')+'\n```';
+      }
+      const d=n.al.map(a=>a==='center'?':---:':a==='left'?':---':a==='right'?'---:':'---');
+      return [n.head.map(cell),d,...n.rows.map(r=>r.map(cell))].map(r=>'| '+r.join(' | ')+' |').join('\n');
+    }
+    case 'list':
+      return n.items.map((it,k)=>{
+        const mk=n.ordered?(n.start+k)+'.':'-';
+        const pad=M==='reddit'?4:mk.length+1;
+        const box=it.task===null?'':(M==='gfm'?(it.task?'[x] ':'[ ] '):(it.task?'☑ ':'☐ '));
+        const lines=mdB(it.c,M,O,!n.loose).split('\n');
+        return [mk+' '+box+lines[0],...lines.slice(1).map(l=>l?' '.repeat(pad)+l:l)].join('\n');
+      }).join(n.loose?'\n\n':'\n');
+  }
+  return '';
+}
+const toMd=(ast,M,O)=>mdB(ast,M,O,false)+'\n';
+
+/* ---------- Entities + Plain text compiler ---------- */
+const decEnt=e=>{const t=document.createElement('textarea');t.innerHTML=e;return t.value};
+function piP(ns){
+  return ns.map(n=>{
+    const c=n.c?piP(n.c):'';
+    switch(n.t){
+      case 'text':return n.v;
+      case 'br':return '\n';
+      case 'code':return n.v;
+      case 'link':return n.url&&c!==n.url?`${c} (${n.url})`:c;
+      case 'img':return n.alt;
+      case 'html':return n.tag==='br'?'\n':'';
+      case 'auto':return n.kind==='url'?n.url:(n.slash?'/':'')+n.kind+'/'+n.name;
+      default:return c;
+    }
+  }).join('');
+}
+function pbP(bs,tight){
+  return bs.map(n=>{
+    switch(n.t){
+      case 'p':case 'h':return piP(n.c);
+      case 'hr':return '--------';
+      case 'code':return n.v;
+      case 'quote':return pbP(n.c);
+      case 'alert':return ALERT[n.k][0].toUpperCase()+': '+pbP(n.c);
+      case 'details':return piP(n.sum)+'\n'+pbP(n.c);
+      case 'table':return [n.head,...n.rows].map(r=>r.map(c=>piP(c).replace(/\s+/g,' ')).join('\t')).join('\n');
+      case 'list':return n.items.map((it,k)=>{
+        const mk=n.ordered?(n.start+k)+'.':'•',box=it.task===null?'':it.task?'☑ ':'☐ ';
+        const ls=pbP(it.c,!n.loose).split('\n');
+        return [mk+' '+box+ls[0],...ls.slice(1).map(l=>l?'  '+l:l)].join('\n');
+      }).join(n.loose?'\n\n':'\n');
+    }
+    return '';
+  }).join(tight?'\n':'\n\n');
+}
+const toPlain=ast=>pbP(ast,false).replace(/\n{3,}/g,'\n\n').trim()+'\n';
+
+/* ---------- Sample ---------- */
+const SAMPLE=[
+'# Kitchen Sink ^(v1)','',
+'Inline: **bold**, *italic*, ***both***, ~~strike~~, `inline code`, and a [link](https://example.com "Title").','',
+'Reddit: a spoiler >!the butler did it!< , E=mc^2 and ^(a multi word superscript), H<sub>2</sub>O and x<sup>2</sup>.','',
+'Autolinks: https://anthropic.com, r/programming, u/spez and /r/AskReddit. Escaped: \\*not italic\\*.','',
+'Entities: A&#x20;B &amp; &lt;tag&gt; &copy; 2026 &hearts; &#8364;5 &nbsp;end','','Code stays literal: `&amp;` and `>!no spoiler!< ^no **bold** r/nolink`','',
+'```js','const s = ">!still not a spoiler!<"; // ^nosup **nobold**','```','',
+'    indented code >!literal!<','',
+'> [!NOTE]','> Alerts become blockquotes outside GFM.','',
+'> [!WARNING]','> Careful with **old Reddit**.','',
+'> A plain blockquote','> with two lines.','',
+'- [x] done task','- [ ] open task','- bullet with nested','  - nested item','  - another nested','','1. first','2. second','   - mixed nested','3. third','',
+'| Name | Qty | Notes |','|:-----|:---:|------:|','| Apple | 3 | `a\\|b` |','| Pear | 12 | ~~old~~ new |','',
+'<details>','<summary>Click to expand</summary>','','Hidden **content** with ^(sup) inside.','','</details>','',
+'---','','Final line with a hard break  ','and a second line.'].join('\n');
+
+/* ---------- UI ---------- */
+const $=id=>document.getElementById(id);
+const ed=$('ed'),pv=$('pv'),raw=$('raw');let tab='pv',timer;
+function build(){return{ast:parse(ed.value),O:{strict:$('strict').checked}}}
+function gen(k,ast,O){return k==='txt'?toPlain(ast):k==='gfm'?toMd(ast,'gfm',O):k==='reddit'?toMd(ast,'reddit',O):k==='cm'?toMd(ast,'cm',O):k==='html'?rbH(ast,{}):JSON.stringify(ast,null,2)}
+function update(){
+  const v=ed.value,w=v.trim()?v.trim().split(/\s+/).length:0;
+  $('cnt').textContent=v.length+' chars · '+w+' words';
+  const{ast,O}=build();
+  if(tab==='pv')pv.innerHTML=rbH(ast,{});else raw.textContent=gen(tab,ast,O);
+}
+const sched=()=>{clearTimeout(timer);timer=setTimeout(update,80)};
+function setTab(t){
+  tab=t;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  pv.hidden=t!=='pv';raw.hidden=t==='pv';update();
+}
+let tt;
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),1800)}
+async function copyText(t,label){
+  try{await navigator.clipboard.writeText(t)}
+  catch(e){const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;left:-9999px';document.body.appendChild(a);a.select();document.execCommand('copy');a.remove()}
+  toast('Copied '+label+' to clipboard');
+}
+async function copyRich(){
+  const{ast,O}=build(),html='<div>'+rbH(ast,{inline:true})+'</div>',plain=toMd(ast,'gfm',O);
+  try{
+    await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([plain],{type:'text/plain'})})]);
+  }catch(e){
+    const d=document.createElement('div');d.contentEditable='true';d.style.cssText='position:fixed;left:-9999px';d.innerHTML=html;document.body.appendChild(d);
+    const r=document.createRange();r.selectNodeContents(d);const s=getSelection();s.removeAllRanges();s.addRange(r);document.execCommand('copy');s.removeAllRanges();d.remove();
+  }
+  toast('Copied Rich Text (HTML + plain text)');
+}
+const cp=(k,label)=>()=>{const{ast,O}=build();copyText(toMd(ast,k,O),label)};
+$('cRich').onclick=copyRich;
+$('cGfm').onclick=cp('gfm','GFM');
+$('cRed').onclick=cp('reddit','Reddit MD');
+$('cCm').onclick=cp('cm','CommonMark');
+$('cTxt').onclick=()=>copyText(toPlain(build().ast),'Plain Text');
+$('strict').onchange=update;
+$('sample').onclick=()=>{ed.value=SAMPLE;update()};
+$('clear').onclick=()=>{ed.value='';update();ed.focus()};
+$('theme').onclick=()=>{
+  const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
+  r.dataset.theme=dark?'light':'dark';
+};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.t));
+pv.addEventListener('click',e=>{const s=e.target.closest('.spoiler');if(s)s.classList.toggle('on')});
+ed.addEventListener('input',sched);
+ed.addEventListener('keydown',e=>{
+  if(e.key!=='Tab')return;
+  e.preventDefault();
+  const s=ed.selectionStart,en=ed.selectionEnd,v=ed.value,ls=v.lastIndexOf('\n',s-1)+1;
+  if(s===en&&!e.shiftKey)ed.setRangeText('    ',s,en,'end');
+  else{
+    const blk=v.slice(ls,en).split('\n').map(l=>e.shiftKey?l.replace(/^( {1,4}|\t)/,''):'    '+l).join('\n');
+    ed.setRangeText(blk,ls,en,'select');
+  }
+  update();
+});
+ed.value=SAMPLE;update();
+</script>
+</body>
+</html>
