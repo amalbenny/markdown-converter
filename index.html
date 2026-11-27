@@ -3,29 +3,48 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Markdown Previewer &amp; Exporter</title>
+<title>Markdown Studio</title>
 <style>
-:root{--bg:#f6f7f9;--pn:#fff;--fg:#1f2328;--mu:#656d76;--bd:#d0d7de;--ac:#2563eb;--cd:#f0f2f5;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1117;--pn:#161b22;--fg:#e6edf3;--mu:#8b949e;--bd:#30363d;--ac:#58a6ff;--cd:#21262d;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#0d1117;--pn:#161b22;--fg:#e6edf3;--mu:#8b949e;--bd:#30363d;--ac:#58a6ff;--cd:#21262d;color-scheme:dark}
+:root{--bg:#f3f4f7;--pn:#fff;--pn2:#f8f9fb;--fg:#1c1f26;--mu:#6b7280;--bd:#e2e5ea;--ac:#4f46e5;--on:#fff;--acs:#eceeff;--cd:#eff1f5;--sh:0 10px 34px rgba(0,0,0,.16);color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1115;--pn:#171a21;--pn2:#1c2029;--fg:#e8eaf0;--mu:#9099a8;--bd:#2a2f3a;--ac:#8b93ff;--on:#10131a;--acs:#262a4a;--cd:#242936;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1115;--pn:#171a21;--pn2:#1c2029;--fg:#e8eaf0;--mu:#9099a8;--bd:#2a2f3a;--ac:#8b93ff;--on:#10131a;--acs:#262a4a;--cd:#242936;color-scheme:dark}
+*{-webkit-tap-highlight-color:transparent}
 html,body{height:100%;margin:0}
-body{display:flex;flex-direction:column;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;background:var(--pn);border-bottom:1px solid var(--bd)}
-header h1{font-size:16px;margin:0 auto 0 0}
-button{font:inherit;font-size:13px;padding:6px 12px;border:1px solid var(--bd);background:var(--pn);color:var(--fg);border-radius:6px;cursor:pointer}
-button:hover{border-color:var(--ac)}
-button.pri{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}
-label.sw{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--mu);cursor:pointer}
-main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px}
-section{display:flex;flex-direction:column;min-height:0;background:var(--pn);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
-.bar{display:flex;gap:6px;align-items:center;padding:6px 8px;border-bottom:1px solid var(--bd);flex-wrap:wrap}
-.bar .sp{margin-left:auto;color:var(--mu);font-size:12px}
-.tab.on{background:var(--ac);border-color:var(--ac);color:#fff}
-textarea{flex:1;resize:none;border:0;outline:0;padding:12px;background:transparent;color:var(--fg);font:13px/1.55 ui-monospace,Consolas,Menlo,monospace;tab-size:4}
-#pv,#raw{flex:1;overflow:auto;padding:14px 18px;margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+#app{height:100%;display:flex;flex-direction:column}
+.i{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.i.sm{width:16px;height:16px}
+.grow{flex:1}
+.bar{display:flex;align-items:center;gap:6px;height:52px;padding:0 10px;background:var(--pn);border-bottom:1px solid var(--bd);flex:none}
+.logo{width:34px;height:34px;border-radius:10px;background:var(--ac);color:var(--on);display:grid;place-items:center}
+.title{font-weight:700;font-size:16px;margin-left:4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:40px;height:40px;padding:0 8px;border:0;background:none;color:var(--fg);border-radius:10px;cursor:pointer;font:inherit;font-weight:600;font-size:14px;touch-action:manipulation}
+.btn:hover,.btn:active{background:var(--cd)}
+.btn.pri{background:var(--ac);color:var(--on);padding:0 12px 0 14px}
+.btn.pri:hover{filter:brightness(1.08)}
+main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr}
+.pane{display:flex;flex-direction:column;min-height:0;min-width:0;background:var(--pn)}
+#edPane{border-right:1px solid var(--bd)}
+.tb{display:flex;gap:2px;align-items:center;padding:5px 8px;overflow-x:auto;border-bottom:1px solid var(--bd);scrollbar-width:none;flex:none;background:var(--pn2)}
+.tb::-webkit-scrollbar{display:none}
+.tb .btn{flex:none;width:40px;padding:0;color:var(--mu)}
+.tb .btn:hover{color:var(--fg)}
+.sep{width:1px;height:22px;background:var(--bd);margin:0 5px;flex:none}
+textarea{flex:1;min-height:0;resize:none;border:0;outline:0;padding:14px;background:transparent;color:var(--fg);font:14px/1.6 ui-monospace,Consolas,Menlo,monospace;tab-size:4}
+.sb{display:flex;justify-content:space-between;padding:5px 14px;font-size:12px;color:var(--mu);border-top:1px solid var(--bd);background:var(--pn2);flex:none}
+.ph{display:flex;align-items:center;gap:8px;padding:5px 8px;border-bottom:1px solid var(--bd);min-height:51px;box-sizing:border-box;flex:none;background:var(--pn2)}
+.seg{display:flex;background:var(--cd);border-radius:10px;padding:3px;flex:none}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:8px;display:flex;gap:6px;align-items:center;color:var(--mu);font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.seg button.on{background:var(--pn);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--bd);background:var(--pn);color:var(--fg);padding:6px 12px;border-radius:999px;font:inherit;font-size:13px;cursor:pointer}
+.chip.on{background:var(--acs);border-color:var(--ac);color:var(--ac);font-weight:600}
+[data-rv="preview"] .chips{display:none}
+#pv,#raw{flex:1;min-height:0;overflow:auto;padding:16px 20px;margin:0}
 #raw{font:12.5px/1.55 ui-monospace,Consolas,Menlo,monospace;white-space:pre-wrap;word-break:break-word}
 #pv h1,#pv h2{border-bottom:1px solid var(--bd);padding-bottom:.25em}
-#pv pre{background:var(--cd);padding:10px;border-radius:6px;overflow:auto}
+#pv pre{background:var(--cd);padding:10px;border-radius:8px;overflow:auto}
 #pv code{background:var(--cd);padding:1px 5px;border-radius:4px;font-family:ui-monospace,Consolas,monospace;font-size:.9em}
 #pv pre code{background:none;padding:0}
 #pv blockquote{border-left:4px solid var(--bd);margin:8px 0;padding:0 14px;color:var(--mu)}
@@ -33,48 +52,147 @@ textarea{flex:1;resize:none;border:0;outline:0;padding:12px;background:transpare
 #pv th,#pv td{border:1px solid var(--bd);padding:5px 10px}
 #pv th{background:var(--cd)}
 #pv img{max-width:100%}
-#pv .alert{border-left:4px solid var(--ac);padding:4px 14px;margin:8px 0;background:var(--cd);border-radius:0 6px 6px 0}
+#pv .alert{border-left:4px solid var(--ac);padding:4px 14px;margin:8px 0;background:var(--cd);border-radius:0 8px 8px 0}
 #pv .alert p{margin:4px 0}
-#pv details{border:1px solid var(--bd);border-radius:6px;padding:4px 10px;margin:8px 0}
+#pv details{border:1px solid var(--bd);border-radius:8px;padding:4px 10px;margin:8px 0}
 .spoiler{background:var(--fg);color:transparent;border-radius:3px;padding:0 3px;cursor:pointer}
 .spoiler.on{background:var(--cd);color:inherit}
-#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#1f2328;color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
-#toast.show{opacity:1}
+.nav{display:none;flex:none;background:var(--pn);border-top:1px solid var(--bd)}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 7px;border:0;background:none;color:var(--mu);font:inherit;font-size:11px;font-weight:600;cursor:pointer;min-height:56px}
+.nav button.on{color:var(--ac)}
+#scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .15s;z-index:20}
+#scrim.on{opacity:1;pointer-events:auto}
+.menu{position:fixed;z-index:21;top:calc(56px + env(safe-area-inset-top,0px));right:10px;width:330px;max-height:80vh;overflow:auto;background:var(--pn);border:1px solid var(--bd);border-radius:14px;box-shadow:var(--sh);padding:6px;display:none}
+.menu.on{display:block}
+.mh{display:none}
+.mi{display:flex;gap:12px;align-items:center;width:100%;text-align:left;border:0;background:none;color:var(--fg);padding:8px 10px;border-radius:10px;font:inherit;cursor:pointer;min-height:52px;box-sizing:border-box}
+.mi:hover,.mi:active{background:var(--cd)}
+.mi b{font-weight:600;font-size:14px}
+.mi small{display:block;color:var(--mu);font-size:12px;line-height:1.3}
+.mi .ic{width:36px;height:36px;border-radius:10px;background:var(--acs);color:var(--ac);display:grid;place-items:center;flex:none}
+.mi.pl .ic{background:var(--cd);color:var(--fg)}
+.mi .t{flex:1;min-width:0}
+.mdiv{height:1px;background:var(--bd);margin:6px 4px}
+.tg{appearance:none;-webkit-appearance:none;width:42px;height:25px;border-radius:13px;background:var(--bd);position:relative;flex:none;cursor:pointer;margin:0;transition:.15s}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:.15s}
+.tg:checked{background:var(--ac)}
+.tg:checked::after{left:20px}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(10px);background:#1f2328;color:#fff;padding:9px 16px;border-radius:24px;font-size:13px;display:flex;align-items:center;gap:8px;opacity:0;pointer-events:none;transition:.2s;z-index:30;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%)}
+@media (hover:hover) and (pointer:fine){
+  .tb{flex-wrap:wrap;overflow:visible;row-gap:2px}
+  .chips{flex-wrap:wrap;overflow:visible}
+  .ph{flex-wrap:wrap}
+}
+.btn:focus-visible,.chip:focus-visible,.seg button:focus-visible,.nav button:focus-visible,.mi:focus-visible{outline:2px solid var(--ac);outline-offset:-2px}
 [hidden]{display:none!important}
-@media (max-width:760px){main{grid-template-columns:1fr;grid-auto-rows:minmax(60vh,1fr);overflow:auto}}
+@media (max-width:760px){
+  .title{display:none}
+  main{display:block;position:relative}
+  .pane{position:absolute;inset:0}
+  main[data-pane=edit] #outPane,main[data-pane=preview] #edPane,main[data-pane=output] #edPane{display:none}
+  .seg{display:none}
+  #outPane[data-rv="preview"] .ph{display:none}
+  .nav{display:flex}
+  #toast{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+  .menu{top:auto;bottom:0;left:0;right:0;width:auto;max-height:80vh;border-radius:18px 18px 0 0;padding:6px 8px calc(12px + env(safe-area-inset-bottom,0px))}
+  .mh{display:block;width:40px;height:4px;border-radius:2px;background:var(--bd);margin:6px auto 8px}
+  .mi{min-height:56px}
+  textarea{font-size:15px}
+}
 </style>
 </head>
 <body>
-<header>
-  <h1>Markdown Previewer &amp; Exporter</h1>
-  <button class="pri" id="cRich">Copy Rich Text</button>
-  <button id="cGfm">Copy GFM</button>
-  <button id="cRed">Copy Reddit MD</button>
-  <button id="cCm">Copy CommonMark</button>
-  <button id="cTxt">Copy Plain Text</button>
-  <label class="sw"><input type="checkbox" id="strict" checked> Old Reddit Strict Mode (4-space code blocks)</label>
-  <button id="theme">Dark / Light</button>
-</header>
-<main>
-  <section>
-    <div class="bar"><button id="sample">Load Sample Kitchen-Sink Text</button><button id="clear">Clear</button><span class="sp" id="cnt"></span></div>
-    <textarea id="ed" spellcheck="false" placeholder="Type or paste Markdown here…"></textarea>
-  </section>
-  <section>
-    <div class="bar" id="tabs">
-      <button class="tab on" data-t="pv">Live Preview</button>
-      <button class="tab" data-t="gfm">GFM</button>
-      <button class="tab" data-t="reddit">Reddit MD</button>
-      <button class="tab" data-t="cm">CommonMark</button>
-      <button class="tab" data-t="txt">Plain Text</button>
-      <button class="tab" data-t="html">HTML</button>
-      <button class="tab" data-t="ast">AST</button>
-    </div>
-    <div id="pv"></div>
-    <pre id="raw" hidden></pre>
-  </section>
-</main>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-md" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 15V9l3 3 3-3v6M17 9v6M15 13l2 2 2-2"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></symbol>
+<symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-paste" viewBox="0 0 24 24"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/></symbol>
+<symbol id="i-dots" viewBox="0 0 24 24"><g fill="currentColor" stroke="none"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></g></symbol>
+<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+<symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+<symbol id="i-bold" viewBox="0 0 24 24"><path d="M7 5h6a3.5 3.5 0 0 1 0 7H7zM7 12h7a3.5 3.5 0 0 1 0 7H7z"/></symbol>
+<symbol id="i-italic" viewBox="0 0 24 24"><path d="M19 4h-9M14 20H5M15 4 9 20"/></symbol>
+<symbol id="i-strike" viewBox="0 0 24 24"><path d="M4 12h16M16 6.5A4 4 0 0 0 12 5c-2.5 0-4 1.3-4 3 0 1.4 1 2.3 4 3M8 17.5A4.5 4.5 0 0 0 12 19c2.5 0 4-1.2 4-3"/></symbol>
+<symbol id="i-code" viewBox="0 0 24 24"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></symbol>
+<symbol id="i-heading" viewBox="0 0 24 24"><path d="M6 4v16M18 4v16M6 12h12"/></symbol>
+<symbol id="i-quote" viewBox="0 0 24 24"><path d="M4 5v14M9 8h11M9 12h11M9 16h7"/></symbol>
+<symbol id="i-ul" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></symbol>
+<symbol id="i-ol" viewBox="0 0 24 24"><path d="M10 6h10M10 12h10M10 18h10M4 5l1.5-1v5M3.5 14.5c0-1 2.5-1 2.5.3 0 1.2-2.5 2.2-2.5 3.2H6.5"/></symbol>
+<symbol id="i-task" viewBox="0 0 24 24"><rect x="3" y="4" width="6" height="6" rx="1"/><path d="m4.5 7 1.2 1.2L8 5.8M13 7h8M13 17h8"/><rect x="3" y="14" width="6" height="6" rx="1"/></symbol>
+<symbol id="i-codeblock" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m10 10-2 2 2 2M14 10l2 2-2 2"/></symbol>
+<symbol id="i-spoiler" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 6.1A9.5 9.5 0 0 1 12 6c5 0 9 6 9 6a15 15 0 0 1-3 3.5M6.6 6.7C4 8.4 3 12 3 12s4 6 9 6c1.2 0 2.3-.3 3.4-.8M9.9 9.9a3 3 0 0 0 4.2 4.2"/></symbol>
+<symbol id="i-sup" viewBox="0 0 24 24"><path d="m4 19 8-8M12 19 4 11M20 11h-4c0-1.5 4-2 4-4.5a2 2 0 0 0-4-.5"/></symbol>
+<symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M10 4v16"/></symbol>
+<symbol id="i-hr" viewBox="0 0 24 24"><path d="M3 12h18M8 6l4-3 4 3M8 18l4 3 4-3"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+<symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="i-out" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M10 13l-2 2 2 2M14 13l2 2-2 2"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+<symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+<symbol id="i-rich" viewBox="0 0 24 24"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></symbol>
+<symbol id="i-text" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.5 7.2L4 20l1-4.5A8 8 0 1 1 21 12z"/></symbol>
+<symbol id="i-html" viewBox="0 0 24 24"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/></symbol>
+</defs></svg>
+<div id="app">
+  <header class="bar">
+    <div class="logo"><svg class="i"><use href="#i-md"/></svg></div>
+    <span class="title">Markdown Studio</span>
+    <span class="grow"></span>
+    <button class="btn pri" id="bCopy" title="Copy or export" aria-label="Copy or export"><svg class="i"><use href="#i-copy"/></svg><span>Copy</span><svg class="i sm"><use href="#i-chev"/></svg></button>
+    <button class="btn" id="bTheme" title="Toggle dark or light theme" aria-label="Toggle theme"></button>
+    <button class="btn" id="bMore" title="More options" aria-label="More options"><svg class="i"><use href="#i-dots"/></svg></button>
+  </header>
+  <main data-pane="edit">
+    <section class="pane" id="edPane">
+      <div class="tb" id="tb"></div>
+      <textarea id="ed" spellcheck="false" autocapitalize="off" placeholder="Type or paste Markdown or rich text here…"></textarea>
+      <div class="sb"><span id="cnt"></span><span>Markdown</span></div>
+    </section>
+    <section class="pane" id="outPane" data-rv="preview">
+      <div class="ph">
+        <div class="seg">
+          <button data-p="preview"><svg class="i sm"><use href="#i-eye"/></svg>Preview</button>
+          <button data-p="output"><svg class="i sm"><use href="#i-out"/></svg>Output</button>
+        </div>
+        <div class="chips" id="chips"></div>
+        <span class="grow"></span>
+        <button class="btn" data-act="copy-cur" title="Copy this view" aria-label="Copy this view"><svg class="i"><use href="#i-copy"/></svg></button>
+      </div>
+      <div id="pv"></div>
+      <pre id="raw" hidden></pre>
+    </section>
+  </main>
+  <nav class="nav">
+    <button data-p="edit" class="on"><svg class="i"><use href="#i-edit"/></svg>Edit</button>
+    <button data-p="preview"><svg class="i"><use href="#i-eye"/></svg>Preview</button>
+    <button data-p="output"><svg class="i"><use href="#i-out"/></svg>Output</button>
+  </nav>
+</div>
+<div id="scrim"></div>
+<div class="menu" id="mCopy">
+  <div class="mh"></div>
+  <button class="mi" data-act="copy-rich"><span class="ic"><svg class="i"><use href="#i-rich"/></svg></span><span class="t"><b>Rich text</b><small>For Docs, Notion, Gmail, Slack, Reddit editor</small></span></button>
+  <button class="mi" data-act="copy-txt"><span class="ic"><svg class="i"><use href="#i-text"/></svg></span><span class="t"><b>Plain text</b><small>No formatting, entities decoded</small></span></button>
+  <div class="mdiv"></div>
+  <button class="mi" data-act="copy-gfm"><span class="ic"><svg class="i"><use href="#i-md"/></svg></span><span class="t"><b>GitHub Markdown</b><small>Tables, task lists, alerts, details</small></span></button>
+  <button class="mi" data-act="copy-reddit"><span class="ic"><svg class="i"><use href="#i-chat"/></svg></span><span class="t"><b>Reddit Markdown</b><small>Spoilers, superscripts, old Reddit safe</small></span></button>
+  <label class="mi pl"><span class="ic"><svg class="i"><use href="#i-code"/></svg></span><span class="t"><b>Old Reddit strict mode</b><small>Use 4-space indented code blocks</small></span><input type="checkbox" class="tg" id="strict" checked></label>
+  <div class="mdiv"></div>
+  <button class="mi" data-act="copy-cm"><span class="ic"><svg class="i"><use href="#i-file"/></svg></span><span class="t"><b>CommonMark</b><small>Strict, standard Markdown only</small></span></button>
+</div>
+<div class="menu" id="mMore">
+  <div class="mh"></div>
+  <button class="mi pl" data-act="sample"><span class="ic"><svg class="i"><use href="#i-file"/></svg></span><span class="t"><b>Load sample text</b><small>Kitchen-sink test document</small></span></button>
+  <label class="mi pl"><span class="ic"><svg class="i"><use href="#i-paste"/></svg></span><span class="t"><b>Convert pasted rich text</b><small>Ctrl+Shift+V pastes plain text</small></span><input type="checkbox" class="tg" id="rp" checked></label>
+  <div class="mdiv"></div>
+  <button class="mi pl" data-act="clear"><span class="ic"><svg class="i"><use href="#i-trash"/></svg></span><span class="t"><b>Clear editor</b><small>You can undo with Ctrl+Z</small></span></button>
+</div>
 <div id="toast"></div>
+
 <script>
 "use strict";
 /* ---------- Block parser ---------- */
@@ -437,6 +555,86 @@ function pbP(bs,tight){
 }
 const toPlain=ast=>pbP(ast,false).replace(/\n{3,}/g,'\n\n').trim()+'\n';
 
+/* ---------- Rich text (HTML) -> Markdown ---------- */
+const BLK=new Set(['p','div','h1','h2','h3','h4','h5','h6','ul','ol','li','blockquote','pre','table','hr','section','article','header','footer','main','aside','figure','details','dl','dt','dd','center']);
+const BLKSEL='p,div,h1,h2,h3,h4,h5,h6,ul,ol,li,blockquote,pre,table,hr,section,article,details';
+const escH=t=>t.replace(/([\\`*_\[\]<>~|^])/g,'\\$1');
+const wrapM=(m,s)=>{if(!s.trim())return s;const l=/^\s*/.exec(s)[0],r=/\s*$/.exec(s)[0];return l+m+s.trim()+m+r};
+function inl(n){
+  if(n.nodeType===3)return escH(n.nodeValue.replace(/[\s\u00a0]+/g,' '));
+  if(n.nodeType!==1)return '';
+  const tg=n.tagName.toLowerCase(),sty=(n.getAttribute('style')||'').toLowerCase();
+  const k=()=>[...n.childNodes].map(inl).join('');
+  let s;
+  switch(tg){
+    case 'br':return '  \n';
+    case 'script':case 'style':case 'input':case 'button':case 'svg':return '';
+    case 'code':case 'kbd':case 'samp':return codeMd(n.textContent);
+    case 'img':{const src=n.getAttribute('src')||'';return src&&!/^data:/i.test(src)?`![${(n.getAttribute('alt')||'').replace(/[\[\]]/g,'')}](${urlMd(src)})`:''}
+    case 'a':{s=k();const h=n.getAttribute('href')||'';if(!h||/^\s*javascript:/i.test(h)||!s.trim())return s;return `[${s.trim()}](${urlMd(h)})`}
+    case 'sup':return `<sup>${k()}</sup>`;
+    case 'sub':return `<sub>${k()}</sub>`;
+  }
+  s=k();
+  const b=tg==='strong'||tg==='b'?!/font-weight:\s*(normal|400)/.test(sty):/font-weight:\s*(bold|[6-9]00)/.test(sty);
+  const i=tg==='em'||tg==='i'||/font-style:\s*italic/.test(sty);
+  const d=tg==='s'||tg==='del'||tg==='strike'||/line-through/.test(sty);
+  if(d)s=wrapM('~~',s);
+  if(i)s=wrapM('*',s);
+  if(b)s=wrapM('**',s);
+  return s;
+}
+const ia=n=>[...n.childNodes].map(inl).join('');
+const lead=s=>s.split('\n').map(l=>l.replace(/^(\s*)(#{1,6}\s|[-+]\s|\d+[.)]\s|>)/,'$1\\$2')).join('\n');
+function blocks(par,sep){
+  const out=[];let run=[];
+  const flush=()=>{const t=run.map(inl).join('').trim();if(t)out.push(lead(t));run=[]};
+  for(const n of par.childNodes){
+    if(n.nodeType===1&&(BLK.has(n.tagName.toLowerCase())||n.querySelector(BLKSEL))){flush();const b=block(n);if(b)out.push(b)}
+    else run.push(n);
+  }
+  flush();return out.join(sep||'\n\n');
+}
+function block(n){
+  const tg=n.tagName.toLowerCase();
+  if(/^h[1-6]$/.test(tg)){const t=ia(n).replace(/\s*\n\s*/g,' ').trim();return t?'#'.repeat(+tg[1])+' '+t:''}
+  if(tg==='p'){const t=ia(n).trim();return t?lead(t):''}
+  if(tg==='hr')return '---';
+  if(tg==='pre'){
+    const c=n.querySelector('code'),m=/language-([\w+#-]+)/.exec((c&&c.className)||n.className||''),v=n.textContent.replace(/\n$/,'');
+    const r=(v.match(/`+/g)||[]).reduce((a,x)=>Math.max(a,x.length),0),f='`'.repeat(Math.max(3,r+1));
+    return f+(m?m[1]:'')+'\n'+v+'\n'+f;
+  }
+  if(tg==='blockquote'){const t=blocks(n);return t?t.split('\n').map(l=>l?'> '+l:'>').join('\n'):''}
+  if(tg==='ul'||tg==='ol')return mdList(n);
+  if(tg==='table')return mdTbl(n);
+  if(tg==='details'){
+    const sm=n.querySelector(':scope > summary'),sum=sm?ia(sm).trim():'Details';
+    if(sm)sm.remove();
+    return `<details>\n<summary>${sum}</summary>\n\n${blocks(n)}\n\n</details>`;
+  }
+  return blocks(n);
+}
+function mdList(n){
+  const ord=n.tagName==='OL';let k=parseInt(n.getAttribute('start')||'1',10);
+  return [...n.children].filter(c=>c.tagName==='LI').map(li=>{
+    const mk=ord?(k++)+'.':'-',cb=li.querySelector('input[type=checkbox]');
+    const ls=(blocks(li,'\n')||'').split('\n');
+    return [mk+' '+(cb?(cb.checked?'[x] ':'[ ] '):'')+ls[0],...ls.slice(1).map(l=>l?' '.repeat(mk.length+1)+l:l)].join('\n');
+  }).join('\n');
+}
+function mdTbl(n){
+  const rows=[...n.querySelectorAll('tr')].filter(r=>r.closest('table')===n).map(r=>[...r.children].filter(c=>/^t[dh]$/i.test(c.tagName)).map(c=>ia(c).replace(/\s*\n\s*/g,' ').trim())).filter(r=>r.length);
+  if(!rows.length)return '';
+  const w=Math.max(...rows.map(r=>r.length)),f=r=>'| '+Array.from({length:w},(_,i)=>r[i]||'').join(' | ')+' |';
+  return [f(rows[0]),'|'+' --- |'.repeat(w),...rows.slice(1).map(f)].join('\n');
+}
+function htmlToMd(html){
+  const b=new DOMParser().parseFromString(html,'text/html').body;
+  if(!b.querySelector('b,strong,i,em,a,h1,h2,h3,h4,h5,h6,ul,ol,li,table,blockquote,pre,img,code,sup,sub,s,del,strike,hr,[style*=font-weight],[style*=font-style],[style*=line-through]'))return null;
+  return blocks(b).replace(/\n{3,}/g,'\n\n').trim();
+}
+
 /* ---------- Sample ---------- */
 const SAMPLE=[
 '# Kitchen Sink ^(v1)','',
@@ -456,26 +654,58 @@ const SAMPLE=[
 
 /* ---------- UI ---------- */
 const $=id=>document.getElementById(id);
-const ed=$('ed'),pv=$('pv'),raw=$('raw');let tab='pv',timer;
+const ICON=n=>`<svg class="i"><use href="#i-${n}"/></svg>`;
+const ed=$('ed'),pv=$('pv'),raw=$('raw'),main=document.querySelector('main'),outPane=$('outPane');
+let pane='edit',rv='preview',ofmt='gfm',timer,tt,openM=null;
+const FM=[['gfm','GFM'],['reddit','Reddit'],['cm','CommonMark'],['txt','Plain text'],['html','HTML'],['ast','AST']];
+const FL=Object.fromEntries(FM);
+$('chips').innerHTML=FM.map(f=>`<button class="chip" data-fmt="${f[0]}">${f[1]}</button>`).join('');
+const TB=[['paste','paste','Paste rich text'],0,['h','heading','Heading (tap again to change level)'],['b','bold','Bold (Ctrl+B)'],['i','italic','Italic (Ctrl+I)'],['s','strike','Strikethrough'],0,['code','code','Inline code'],['link','link','Link (Ctrl+K)'],0,['quote','quote','Quote'],['ul','ul','Bullet list'],['ol','ol','Numbered list'],['task','task','Task list'],0,['block','codeblock','Code block'],['spoiler','spoiler','Spoiler'],['sup','sup','Superscript'],['table','table','Table'],['hr','hr','Divider']];
+$('tb').innerHTML=TB.map(t=>t?`<button class="btn" data-f="${t[0]}" title="${t[2]}" aria-label="${t[2]}">${ICON(t[1])}</button>`:'<span class="sep"></span>').join('');
+$('tb').addEventListener('pointerdown',e=>e.preventDefault());
+
 function build(){return{ast:parse(ed.value),O:{strict:$('strict').checked}}}
 function gen(k,ast,O){return k==='txt'?toPlain(ast):k==='gfm'?toMd(ast,'gfm',O):k==='reddit'?toMd(ast,'reddit',O):k==='cm'?toMd(ast,'cm',O):k==='html'?rbH(ast,{}):JSON.stringify(ast,null,2)}
 function update(){
   const v=ed.value,w=v.trim()?v.trim().split(/\s+/).length:0;
   $('cnt').textContent=v.length+' chars · '+w+' words';
   const{ast,O}=build();
-  if(tab==='pv')pv.innerHTML=rbH(ast,{});else raw.textContent=gen(tab,ast,O);
+  pv.hidden=rv!=='preview';raw.hidden=rv==='preview';
+  if(rv==='preview')pv.innerHTML=rbH(ast,{});else raw.textContent=gen(ofmt,ast,O);
 }
 const sched=()=>{clearTimeout(timer);timer=setTimeout(update,80)};
-function setTab(t){
-  tab=t;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  pv.hidden=t!=='pv';raw.hidden=t==='pv';update();
+function view(){
+  main.dataset.pane=pane;outPane.dataset.rv=rv;
+  document.querySelectorAll('.nav [data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===pane));
+  document.querySelectorAll('.seg [data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===rv));
+  document.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',b.dataset.fmt===ofmt));
+  update();
 }
-let tt;
-function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),1800)}
+function setPane(p){pane=p;if(p!=='edit')rv=p;view()}
+
+/* menus */
+function closeMenu(){if(openM)openM.classList.remove('on');openM=null;$('scrim').classList.remove('on')}
+function openMenu(id){const m=$(id);if(openM===m){closeMenu();return}closeMenu();m.classList.add('on');openM=m;$('scrim').classList.add('on')}
+$('bCopy').onclick=()=>openMenu('mCopy');
+$('bMore').onclick=()=>openMenu('mMore');
+$('scrim').onclick=closeMenu;
+addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});
+
+/* theme */
+const isDark=()=>{const r=document.documentElement;return r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches};
+const themeIcon=()=>{$('bTheme').innerHTML=ICON(isDark()?'sun':'moon')};
+$('bTheme').onclick=()=>{document.documentElement.dataset.theme=isDark()?'light':'dark';themeIcon()};
+themeIcon();
+
+/* toast + clipboard */
+function toast(m){
+  const t=$('toast');t.innerHTML=ICON('check')+'<span></span>';t.lastChild.textContent=m;t.classList.add('show');
+  clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),1900);
+}
 async function copyText(t,label){
   try{await navigator.clipboard.writeText(t)}
   catch(e){const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;left:-9999px';document.body.appendChild(a);a.select();document.execCommand('copy');a.remove()}
-  toast('Copied '+label+' to clipboard');
+  toast('Copied '+label);
 }
 async function copyRich(){
   const{ast,O}=build(),html='<div>'+rbH(ast,{inline:true})+'</div>',plain=toMd(ast,'gfm',O);
@@ -485,36 +715,100 @@ async function copyRich(){
     const d=document.createElement('div');d.contentEditable='true';d.style.cssText='position:fixed;left:-9999px';d.innerHTML=html;document.body.appendChild(d);
     const r=document.createRange();r.selectNodeContents(d);const s=getSelection();s.removeAllRanges();s.addRange(r);document.execCommand('copy');s.removeAllRanges();d.remove();
   }
-  toast('Copied Rich Text (HTML + plain text)');
+  toast('Copied rich text');
 }
-const cp=(k,label)=>()=>{const{ast,O}=build();copyText(toMd(ast,k,O),label)};
-$('cRich').onclick=copyRich;
-$('cGfm').onclick=cp('gfm','GFM');
-$('cRed').onclick=cp('reddit','Reddit MD');
-$('cCm').onclick=cp('cm','CommonMark');
-$('cTxt').onclick=()=>copyText(toPlain(build().ast),'Plain Text');
-$('strict').onchange=update;
-$('sample').onclick=()=>{ed.value=SAMPLE;update()};
-$('clear').onclick=()=>{ed.value='';update();ed.focus()};
-$('theme').onclick=()=>{
-  const r=document.documentElement,dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
-  r.dataset.theme=dark?'light':'dark';
+const cp=(k,l)=>()=>{const{ast,O}=build();copyText(toMd(ast,k,O),l)};
+
+/* editing helpers (execCommand keeps native undo) */
+function ex(t){ed.focus();if(!document.execCommand('insertText',false,t))ed.setRangeText(t,ed.selectionStart,ed.selectionEnd,'end');update()}
+function wrap(a,b,ph){
+  const v=ed.value,s=ed.selectionStart,e=ed.selectionEnd,sel=v.slice(s,e);
+  if(sel&&v.slice(s-a.length,s)===a&&v.slice(e,e+b.length)===b){ed.setSelectionRange(s-a.length,e+b.length);ex(sel);ed.setSelectionRange(s-a.length,s-a.length+sel.length);return}
+  const t=sel||ph;ed.setSelectionRange(s,e);ex(a+t+b);ed.setSelectionRange(s+a.length,s+a.length+t.length);
+}
+function lines(fn){
+  const v=ed.value,s=ed.selectionStart,e=ed.selectionEnd,ls=v.lastIndexOf('\n',s-1)+1;
+  let le=v.indexOf('\n',e);if(le<0)le=v.length;
+  const out=fn(v.slice(ls,le).split('\n')).join('\n');
+  ed.setSelectionRange(ls,le);ex(out);ed.setSelectionRange(ls,ls+out.length);
+}
+const STRIP=/^(- \[[ xX]\] |[-*+] |\d+\. |> )/;
+const pre=(re,mk)=>L=>{const all=L.every(l=>!l.trim()||re.test(l));return L.map((l,i)=>all?l.replace(re,''):(l.trim()?mk(i)+l.replace(STRIP,''):l))};
+async function pasteRich(){
+  try{
+    for(const it of await navigator.clipboard.read()){
+      if(it.types.includes('text/html')){
+        const md=htmlToMd(await(await it.getType('text/html')).text());
+        if(md&&md.trim()){ex(md);toast('Rich text converted to Markdown');return}
+      }
+      if(it.types.includes('text/plain')){ex(await(await it.getType('text/plain')).text());toast('Pasted text');return}
+    }
+    toast('Clipboard is empty');
+  }catch(x){toast('Clipboard blocked here - use Ctrl+V in the editor')}
+}
+function doFmt(k){
+  switch(k){
+    case 'paste':return pasteRich();
+    case 'h':return lines(L=>L.map(l=>{const m=/^(#{1,6}) /.exec(l),n=m?m[1].length:0,base=l.replace(/^#{1,6} /,'');return n>=3?base:'#'.repeat(n+1)+' '+base}));
+    case 'b':return wrap('**','**','bold');
+    case 'i':return wrap('*','*','italic');
+    case 's':return wrap('~~','~~','strike');
+    case 'code':return wrap('`','`','code');
+    case 'block':return wrap('```\n','\n```','code');
+    case 'spoiler':return wrap('>!','!<','spoiler');
+    case 'sup':return wrap('^(',')','text');
+    case 'quote':return lines(pre(/^> /,()=>'> '));
+    case 'ul':return lines(pre(/^- (?!\[[ xX]\] )/,()=>'- '));
+    case 'task':return lines(pre(/^- \[[ xX]\] /,()=>'- [ ] '));
+    case 'ol':return lines(pre(/^\d+\. /,i=>(i+1)+'. '));
+    case 'hr':return ex('\n\n---\n\n');
+    case 'table':return ex('\n| Column 1 | Column 2 |\n| --- | --- |\n| Cell | Cell |\n');
+    case 'link':{const s=ed.selectionStart,e=ed.selectionEnd,t=ed.value.slice(s,e)||'text';ex(`[${t}](https://)`);const p=s+t.length+3;ed.setSelectionRange(p,p+8);return}
+  }
+}
+
+/* actions */
+const ACT={
+  'copy-rich':copyRich,
+  'copy-txt':()=>copyText(toPlain(build().ast),'plain text'),
+  'copy-gfm':cp('gfm','GitHub Markdown'),
+  'copy-reddit':cp('reddit','Reddit Markdown'),
+  'copy-cm':cp('cm','CommonMark'),
+  'copy-cur':()=>{if(rv==='preview')return copyRich();const{ast,O}=build();copyText(gen(ofmt,ast,O),FL[ofmt])},
+  'sample':()=>{ed.focus();ed.select();ex(SAMPLE);ed.setSelectionRange(0,0);ed.scrollTop=0;if(pane!=='edit'&&innerWidth<=760)setPane('edit')},
+  'clear':()=>{ed.focus();ed.select();ex('');toast('Editor cleared')}
 };
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.t));
+document.addEventListener('click',e=>{
+  let t;
+  if(t=e.target.closest('[data-f]'))return doFmt(t.dataset.f);
+  if(t=e.target.closest('[data-act]')){closeMenu();const f=ACT[t.dataset.act];if(f)f();return}
+  if(t=e.target.closest('[data-p]'))return setPane(t.dataset.p);
+  if(t=e.target.closest('[data-fmt]')){ofmt=t.dataset.fmt;view()}
+});
+$('strict').onchange=update;
 pv.addEventListener('click',e=>{const s=e.target.closest('.spoiler');if(s)s.classList.toggle('on')});
 ed.addEventListener('input',sched);
+ed.addEventListener('paste',e=>{
+  if(!$('rp').checked||!e.clipboardData)return;
+  const h=e.clipboardData.getData('text/html');
+  if(!h||!h.trim())return;
+  let md=null;try{md=htmlToMd(h)}catch(x){}
+  if(md===null||!md.trim())return;
+  e.preventDefault();ex(md);toast('Rich text converted to Markdown');
+});
 ed.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&!e.altKey&&!e.shiftKey){
+    const m={b:'b',i:'i',k:'link'}[e.key.toLowerCase()];
+    if(m){e.preventDefault();doFmt(m);return}
+  }
   if(e.key!=='Tab')return;
   e.preventDefault();
-  const s=ed.selectionStart,en=ed.selectionEnd,v=ed.value,ls=v.lastIndexOf('\n',s-1)+1;
-  if(s===en&&!e.shiftKey)ed.setRangeText('    ',s,en,'end');
-  else{
-    const blk=v.slice(ls,en).split('\n').map(l=>e.shiftKey?l.replace(/^( {1,4}|\t)/,''):'    '+l).join('\n');
-    ed.setRangeText(blk,ls,en,'select');
-  }
-  update();
+  const sel=ed.selectionStart!==ed.selectionEnd;
+  if(!sel&&!e.shiftKey)ex('    ');
+  else lines(L=>L.map(l=>e.shiftKey?l.replace(/^( {1,4}|\t)/,''):'    '+l));
 });
-ed.value=SAMPLE;update();
+ed.value=SAMPLE;view();
+
 </script>
 </body>
 </html>
