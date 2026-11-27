@@ -560,37 +560,51 @@ const BLK=new Set(['p','div','h1','h2','h3','h4','h5','h6','ul','ol','li','block
 const BLKSEL='p,div,h1,h2,h3,h4,h5,h6,ul,ol,li,blockquote,pre,table,hr,section,article,details';
 const escH=t=>t.replace(/([\\`*_\[\]<>~|^])/g,'\\$1');
 const wrapM=(m,s)=>{if(!s.trim())return s;const l=/^\s*/.exec(s)[0],r=/\s*$/.exec(s)[0];return l+m+s.trim()+m+r};
-function inl(n){
+function jn(nodes,f){
+  const a=[...nodes],skip=/^(br|sup|sub|code|kbd|samp)$/;let out='';
+  for(let k=0;k<a.length;k++){
+    const n=a[k],s=inl(n,f);
+    if(!s)continue;
+    if(k&&out&&n.nodeType===1&&a[k-1].nodeType===1&&!skip.test(n.tagName.toLowerCase())&&!skip.test(a[k-1].tagName.toLowerCase())){
+      const p=a[k-1].textContent||'',q=n.textContent||'';
+      if(/[^\s(\[{"'\/-]$/.test(p)&&/^[^\s)\]}.,;:!?"'%]/.test(q)&&!/\s$/.test(out)&&!/^\s/.test(s))out+=' ';
+    }
+    out+=s;
+  }
+  return out.replace(/([^\s*`])\*\*\*\*([^\s*`])/g,'$1$2');
+}
+function inl(n,f){
+  f=f||{};
   if(n.nodeType===3)return escH(n.nodeValue.replace(/[\s\u00a0]+/g,' '));
   if(n.nodeType!==1)return '';
   const tg=n.tagName.toLowerCase(),sty=(n.getAttribute('style')||'').toLowerCase();
-  const k=()=>[...n.childNodes].map(inl).join('');
-  let s;
+  if(/display:\s*none/.test(sty))return '';
   switch(tg){
     case 'br':return '  \n';
     case 'script':case 'style':case 'input':case 'button':case 'svg':return '';
     case 'code':case 'kbd':case 'samp':return codeMd(n.textContent);
     case 'img':{const src=n.getAttribute('src')||'';return src&&!/^data:/i.test(src)?`![${(n.getAttribute('alt')||'').replace(/[\[\]]/g,'')}](${urlMd(src)})`:''}
-    case 'a':{s=k();const h=n.getAttribute('href')||'';if(!h||/^\s*javascript:/i.test(h)||!s.trim())return s;return `[${s.trim()}](${urlMd(h)})`}
-    case 'sup':return `<sup>${k()}</sup>`;
-    case 'sub':return `<sub>${k()}</sub>`;
+    case 'a':{const s=jn(n.childNodes,f),h=n.getAttribute('href')||'';if(!h||/^\s*javascript:/i.test(h)||!s.trim())return s;return `[${s.trim()}](${urlMd(h)})`}
+    case 'sup':return `<sup>${jn(n.childNodes,f)}</sup>`;
+    case 'sub':return `<sub>${jn(n.childNodes,f)}</sub>`;
   }
-  s=k();
   const b=tg==='strong'||tg==='b'?!/font-weight:\s*(normal|400)/.test(sty):/font-weight:\s*(bold|[6-9]00)/.test(sty);
   const i=tg==='em'||tg==='i'||/font-style:\s*italic/.test(sty);
   const d=tg==='s'||tg==='del'||tg==='strike'||/line-through/.test(sty);
-  if(d)s=wrapM('~~',s);
-  if(i)s=wrapM('*',s);
-  if(b)s=wrapM('**',s);
+  let s=jn(n.childNodes,{b:f.b||b,i:f.i||i,d:f.d||d});
+  if(d&&!f.d)s=wrapM('~~',s);
+  if(i&&!f.i)s=wrapM('*',s);
+  if(b&&!f.b)s=wrapM('**',s);
   return s;
 }
-const ia=n=>[...n.childNodes].map(inl).join('');
+const isBlk=n=>{const t=n.tagName.toLowerCase();return BLK.has(t)||(t==='span'&&/display:\s*(block|flex|grid|table|list-item)/.test((n.getAttribute('style')||'').toLowerCase()))||!!n.querySelector(BLKSEL)};
+const ia=n=>jn(n.childNodes,{});
 const lead=s=>s.split('\n').map(l=>l.replace(/^(\s*)(#{1,6}\s|[-+]\s|\d+[.)]\s|>)/,'$1\\$2')).join('\n');
 function blocks(par,sep){
   const out=[];let run=[];
-  const flush=()=>{const t=run.map(inl).join('').trim();if(t)out.push(lead(t));run=[]};
+  const flush=()=>{const t=jn(run,{}).trim();if(t)out.push(lead(t));run=[]};
   for(const n of par.childNodes){
-    if(n.nodeType===1&&(BLK.has(n.tagName.toLowerCase())||n.querySelector(BLKSEL))){flush();const b=block(n);if(b)out.push(b)}
+    if(n.nodeType===1&&isBlk(n)){flush();const b=block(n);if(b)out.push(b)}
     else run.push(n);
   }
   flush();return out.join(sep||'\n\n');
